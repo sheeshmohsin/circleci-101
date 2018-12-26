@@ -1,4 +1,4 @@
-FROM sdiaz/liquibase:latest
+FROM sheeshmohsin/liquibase:latest
 
 ENV POSTGRES_DB=postgres \
     POSTGRES_USER=vvents \
