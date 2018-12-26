@@ -1,0 +1,20 @@
+databaseChangeLog:
+- changeSet:
+    id: schema-1.0.0    
+    author: sheeshmohsin
+    changes:
+
+    # test table
+    - createTable:
+        tableName: test
+        columns:
+        - column:
+            name: vm_count
+            type: INT
+            constraints:
+              nullable: false
+        - column:
+            name: created_at
+            type: TIMESTAMP WITH TIME ZONE
+            constraints:
+              nullable: falses

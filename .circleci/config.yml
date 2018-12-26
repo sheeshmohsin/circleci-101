@@ -2,18 +2,16 @@ version: 2.0
 jobs:
  build:
    # pre-built images: https://circleci.com/docs/2.0/circleci-images/
-   docker:
-     - image: ubuntu:16.04
+   machine: true
    steps:
      - checkout
      - run:
-         name: The First Step
+         name: Build
          command: |
-           echo 'Hello World!'
-           echo 'This is the delivery pipeline'
+           docker build -t $CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
      - run:
-         name: Code Has Arrived
+         name: Release
          command: |
-           ls -al
-           echo '^^^That should look familiar^^^'
+           echo 'Released'
+           
            
