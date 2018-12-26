@@ -24,7 +24,7 @@ workflows:
  build_release_and_deploy:
    jobs:
      - build
-     - release
+     - release:
          requires:
            - build
          filters:
