@@ -61,5 +61,6 @@ workflows:
          filters:
            branches:
              only:
+               - master
                - dev
 
