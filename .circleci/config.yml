@@ -29,6 +29,8 @@ jobs:
  release:
    machine: true
    steps:
+     - attach_workspace:
+         at: .
      - run:
          name: Release
          command: |  
