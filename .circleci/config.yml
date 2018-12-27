@@ -75,7 +75,7 @@ jobs:
            ssh -o StrictHostKeyChecking=no $STAGING_USER@$STAGING_HOST /home/$STAGING_USER/$RELOAD_SCRIPT
 
 workflows:
- version: 2.0
+ version: 2
  build_release_and_deploy:
    jobs:
      - build-local-branch:
