@@ -1,10 +1,24 @@
 version: 2.0
 jobs:
+ install-sonar-scanner:
+   machine: true
+   steps:
+     - 
  build-local-branch:
    # (pre-built) images: https://circleci.com/docs/2.0/circleci-images/
    machine: true
    steps:
+     - run:
+         name: Install Sonar Scanner
+         command: |
+           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
+           sudo unzip -d /opt/ sonar-scanner-cli-3.2.0.1227-linux.zip
+           sudo echo "sonar.host.url=http://137.135.82.179" | sudo tee -a /opt/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
      - checkout
+     - run:
+         name: Run Sonar Scanner
+         command: |
+           /opt/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.password=$SONAR_PASS
      - run:
          name: Build
          command: |
@@ -14,7 +28,17 @@ jobs:
    # (pre-built) images: https://circleci.com/docs/2.0/circleci-images/
    machine: true
    steps:
+     - run:
+         name: Install Sonar Scanner
+         command: |
+           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
+           sudo unzip -d /opt/ sonar-scanner-cli-3.2.0.1227-linux.zip
+           sudo echo "sonar.host.url=http://137.135.82.179" | sudo tee -a /opt/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
      - checkout
+     - run:
+         name: Run Sonar Scanner
+         command: |
+           /opt/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.password=$SONAR_PASS
      - run:
          name: Build
          command: |
