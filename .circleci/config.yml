@@ -31,7 +31,7 @@ jobs:
            docker images
            docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_SERVER
            docker push $DOCKER_SERVER/$CIRCLE_PROJECT_REPONAME:`[ $CIRCLE_BRANCH = 'master' ] && echo 'production' || echo 'staging'`
-           echo 'Released'
+           echos 'Fail'
 
  deploy:
    machine: true
