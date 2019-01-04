@@ -1,16 +1,16 @@
 version: 2.0
 jobs:
- build-local-branch:
+ build-pr:
    # (pre-built) images: https://circleci.com/docs/2.0/circleci-images/
    machine: true
    steps:
      - checkout
      - run:
-         name: Build
+         name: Echo var
          command: |
-           docker build -t $CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH/\//-} .
+           echo $CIRCLE_PULL_REQUEST
 
- build-production-and-staging:
+ build-branch:
    # (pre-built) images: https://circleci.com/docs/2.0/circleci-images/
    machine: true
    steps:
@@ -59,29 +59,29 @@ workflows:
  version: 2
  build_release_and_deploy:
    jobs:
-     - build-local-branch:
+     - build-pr:
          filters:
            branches:
              ignore:
                - master
                - dev
-     - build-production-and-staging:
+     - build-branch:
          filters:
            branches:
              only:
                - master
                - dev
-     - release:
+     - release-branch:
          requires:
-           - build-production-and-staging
+           - build-branch
          filters:
            branches:
              only:
                - master
                - dev
-     - deploy:
+     - deploy-branch:
          requires:
-           - release
+           - release-branch
          filters:
            branches:
              only:
