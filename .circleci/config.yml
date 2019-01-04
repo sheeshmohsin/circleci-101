@@ -9,6 +9,12 @@ jobs:
          name: Echo var
          command: |
            echo $CIRCLE_PULL_REQUEST
+           if [ -z "$CIRCLE_PULL_REQUEST" ]
+           then
+             echo "\$CIRCLE_PULL_REQUEST is empty"
+           else
+             echo "\$CIRCLE_PULL_REQUEST is not empty"
+           fi
 
  build-branch:
    # (pre-built) images: https://circleci.com/docs/2.0/circleci-images/
