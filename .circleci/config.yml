@@ -12,6 +12,7 @@ jobs:
            if [ -z "$CIRCLE_PULL_REQUEST" ]
            then
              echo "\$CIRCLE_PULL_REQUEST is empty"
+             circleci step halt
            else
              echo "\$CIRCLE_PULL_REQUEST is not empty"
            fi
