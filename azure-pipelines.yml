@@ -7,14 +7,13 @@ trigger:
 - master
 - dev
 
-variables:
-- group: my-variable-group
-
 pool:
   vmImage: 'Ubuntu-16.04'
 
 variables:
-  imageName: '$(Build.Repository.Name):latest'
+- group: my-variable-group
+- name: imageName
+  value: '$(Build.Repository.Name):latest'
 
 steps:
 - script: |
