@@ -10,8 +10,18 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 variables:
-  imageName: 'your-container-image-name:$(build.buildId)'
+  imageName: '$(Build.Repository.Name):latest'
 
 steps:
+- script: |
+    echo $(Build.Repository.Name)
+    echo $(Build.SourceBranchName)
+    echo $(Build.Reason)
+    echo $(SONAR_LOGIN)
+    echo $(SONAR_PASS)
+    echo $(DOCKER_USER)
+    echo $(DOCKER_PASS)
+    echo $(DOCKER_SERVER)
+
 - script: docker build -f Dockerfile -t $(imageName) .
   displayName: 'docker build'
