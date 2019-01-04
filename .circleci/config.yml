@@ -1,27 +1,22 @@
 version: 2.0
 jobs:
- build-local-branch:
+ build-pr:
    # (pre-built) images: https://circleci.com/docs/2.0/circleci-images/
    machine: true
    steps:
      - checkout
      - run:
-         name: Install Sonar Scanner
+         name: Echo var
          command: |
-           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
-           sudo unzip -d /opt/ sonar-scanner-cli-3.2.0.1227-linux.zip
-           sudo echo "sonar.host.url=http://137.135.82.179" | sudo tee -a /opt/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
-           rm sonar-scanner-cli-3.2.0.1227-linux.zip
-     - run:
-         name: Run Sonar Scanner
-         command: |
-           /opt/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.password=$SONAR_PASS
-     - run:
-         name: Build
-         command: |
-           docker build -t $CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH/\//-} .
+           echo $CIRCLE_PULL_REQUEST
+           if [ -z "$CIRCLE_PULL_REQUEST" ]
+           then
+             echo "\$CIRCLE_PULL_REQUEST is empty"
+           else
+             echo "\$CIRCLE_PULL_REQUEST is not empty"
+           fi
 
- build-production-and-staging:
+ build-branch:
    # (pre-built) images: https://circleci.com/docs/2.0/circleci-images/
    machine: true
    steps:
@@ -80,29 +75,29 @@ workflows:
  version: 2
  build_release_and_deploy:
    jobs:
-     - build-local-branch:
+     - build-pr:
          filters:
            branches:
              ignore:
                - master
                - dev
-     - build-production-and-staging:
+     - build-branch:
          filters:
            branches:
              only:
                - master
                - dev
-     - release:
+     - release-branch:
          requires:
-           - build-production-and-staging
+           - build-branch
          filters:
            branches:
              only:
                - master
                - dev
-     - deploy:
+     - deploy-branch:
          requires:
-           - release
+           - release-branch
          filters:
            branches:
              only:
