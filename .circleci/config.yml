@@ -22,6 +22,17 @@ jobs:
    steps:
      - checkout
      - run:
+         name: Install Sonar Scanner
+         command: |
+           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
+           sudo unzip -d /opt/ sonar-scanner-cli-3.2.0.1227-linux.zip
+           sudo echo "sonar.host.url=http://137.135.82.179" | sudo tee -a /opt/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
+           rm sonar-scanner-cli-3.2.0.1227-linux.zip
+     - run:
+         name: Run Sonar Scanner
+         command: |
+           /opt/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$SONAR_LOGIN -Dsonar.password=$SONAR_PASS
+     - run:
          name: Build
          command: |
            docker build -t $CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH/\//-} .
@@ -35,12 +46,11 @@ jobs:
  release:
    machine: true
    steps:
-     - restore_cache:
-         keys:
-           - save-image
+     - attach_workspace:
+         at: .
      - run:
          name: Release
-         command: |
+         command: |  
            docker load < docker-cache/built-image.tar
            docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_SERVER
            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
