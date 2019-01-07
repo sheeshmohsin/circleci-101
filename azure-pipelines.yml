@@ -6,7 +6,10 @@
 trigger:
 - master
 - dev
-- bug/*
+
+pr:
+- master
+- dev
 
 variables:
 - group: my-variable-group
@@ -19,20 +22,30 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   steps:
   - script: |
+      git config --global user.email "$(GIT_USER_EMAIL)"
+      git config --global user.name "$(GIT_USER_NAME)"
+      git merge $(System.PullRequest.SourceBranch)
+      docker build -f Dockerfile -t $(imageName) .
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+
+- job: build_branch
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - script: docker build -f Dockerfile -t $(imageName) .
+    displayName: 'docker build'
+
+- job: echo
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - script: |
       ls -la
       echo "==============="
       git status
       echo "=================="
       git branch
       echo "================="
-      git checkout $(System.PullRequest.SourceBranch)
-      echo "================="
-      git checkout $(System.PullRequest.TargetBranch)
-      echo "================="
-      git config --global user.email "$(GIT_USER_EMAIL)"
-      git config --global user.name "$(GIT_USER_NAME)"
-      git merge $(System.PullRequest.SourceBranch)
-      echo "=================="
       echo $(Build.Repository.Name)
       echo $(Build.SourceBranch)
       echo $(Build.SourceBranchName)
@@ -44,11 +57,4 @@ jobs:
       echo $(DOCKER_USER)
       echo $(DOCKER_PASS)
       echo $(DOCKER_SERVER)
-
-- job: build_branch
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  steps:
-  - script: docker build -f Dockerfile -t $(imageName) .
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: 'docker build'
+      echo "=================="
