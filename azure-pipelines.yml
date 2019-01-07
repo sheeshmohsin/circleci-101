@@ -86,8 +86,8 @@ jobs:
       echo "================="
       echo "${BASH_VERSION}"
       bash --version
-      echo ${${Build.Repository.Name}##*/}
-      echo ${${Build.SourceBranchName}/\//-}
+      echo ${BUILD_REPOSITORY_NAME##*/}
+      echo ${BUILD_SOURCEBRANCHNAME/\//-}
       echo $(System.DefaultWorkingDirectory)
       echo $(Build.Repository.Name)
       echo $(Build.SourceBranch)
