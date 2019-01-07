@@ -16,34 +16,38 @@ variables:
 - name: imageName
   value: '$(Build.Repository.Name):latest'
 
-steps:
-- script: |
-    ls -la
-    echo "==============="
-    git status
-    echo "=================="
-    git branch
-    echo "================="
-    git checkout $(System.PullRequest.SourceBranch)
-    echo "================="
-    git checkout $(System.PullRequest.TargetBranch)
-    echo "================="
-    git config --global user.email "sheeshmohsin@gmail.com"
-    git config --global user.name "Sheesh Mohsin"
-    git merge $(System.PullRequest.SourceBranch)
-    echo "=================="
-    echo $(Build.Repository.Name)
-    echo $(Build.SourceBranch)
-    echo $(Build.SourceBranchName)
-    echo $(System.PullRequest.SourceBranch)
-    echo $(System.PullRequest.TargetBranch)
-    echo $(Build.Reason)
-    echo $(SONAR_LOGIN)
-    echo $(SONAR_PASS)
-    echo $(DOCKER_USER)
-    echo $(DOCKER_PASS)
-    echo $(DOCKER_SERVER)
+jobs:
+- job: "Test Commands"
+  steps:
+  - script: |
+      ls -la
+      echo "==============="
+      git status
+      echo "=================="
+      git branch
+      echo "================="
+      git checkout $(System.PullRequest.SourceBranch)
+      echo "================="
+      git checkout $(System.PullRequest.TargetBranch)
+      echo "================="
+      git config --global user.email "sheeshmohsin@gmail.com"
+      git config --global user.name "Sheesh Mohsin"
+      git merge $(System.PullRequest.SourceBranch)
+      echo "=================="
+      echo $(Build.Repository.Name)
+      echo $(Build.SourceBranch)
+      echo $(Build.SourceBranchName)
+      echo $(System.PullRequest.SourceBranch)
+      echo $(System.PullRequest.TargetBranch)
+      echo $(Build.Reason)
+      echo $(SONAR_LOGIN)
+      echo $(SONAR_PASS)
+      echo $(DOCKER_USER)
+      echo $(DOCKER_PASS)
+      echo $(DOCKER_SERVER)
 
-- script: docker build -f Dockerfile -t $(imageName) .
-  condition: eq(variables['Build.Reason'], 'PullRequest')
-  displayName: 'docker build'
+- job: "Build Docker Image"
+  steps:
+  - script: docker build -f Dockerfile -t $(imageName) .
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: 'docker build'
