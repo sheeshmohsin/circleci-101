@@ -24,6 +24,8 @@ steps:
     echo "=================="
     git branch
     echo "================="
+    git checkout $(System.PullRequest.SourceBranch)
+    echo "================="
     git checkout $(System.PullRequest.TargetBranch)
     echo "================="
     git merge $(System.PullRequest.SourceBranch)
