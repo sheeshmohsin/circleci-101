@@ -35,8 +35,17 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   condition: eq(variables['Build.Reason'], 'IndividualCI')
   steps:
-  - script: docker build -f Dockerfile -t $(imageName) .
+  - script: |
+      docker build -f Dockerfile -t ${Build.Repository.Name##*/}:${Build.SourceBranchName/\//-} .
+      mkdir -p docker-cache
+      ls -la
+      docker images
+      docker save -o docker-cache/built-image.tar
     displayName: 'build_branch'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'docker-cache'
+      targetPath: 'docker-cache'
 
 - job: release_branch
   pool:
@@ -44,6 +53,9 @@ jobs:
   dependsOn: build_branch
   condition: eq(variables['Build.Reason'], 'IndividualCI')
   steps:
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      targetPath: .
   - script: |
       echo $(Build.Reason)
       echo "=========release_branch========="
