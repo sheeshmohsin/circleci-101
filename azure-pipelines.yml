@@ -6,6 +6,7 @@
 trigger:
 - master
 - dev
+- bug/*
 
 pool:
   vmImage: 'Ubuntu-16.04'
@@ -17,6 +18,8 @@ variables:
 
 steps:
 - script: |
+    ls -la
+    git status
     echo $(Build.Repository.Name)
     echo $(Build.SourceBranchName)
     echo $(Build.Reason)
@@ -27,4 +30,5 @@ steps:
     echo $(DOCKER_SERVER)
 
 - script: docker build -f Dockerfile -t $(imageName) .
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   displayName: 'docker build'
