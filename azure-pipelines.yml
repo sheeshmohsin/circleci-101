@@ -6,29 +6,55 @@
 trigger:
 - master
 - dev
-- bug/*
 
-pool:
-  vmImage: 'Ubuntu-16.04'
+pr:
+- master
+- dev
 
 variables:
 - group: my-variable-group
 - name: imageName
   value: '$(Build.Repository.Name):latest'
 
-steps:
-- script: |
-    ls -la
-    git status
-    echo $(Build.Repository.Name)
-    echo $(Build.SourceBranchName)
-    echo $(Build.Reason)
-    echo $(SONAR_LOGIN)
-    echo $(SONAR_PASS)
-    echo $(DOCKER_USER)
-    echo $(DOCKER_PASS)
-    echo $(DOCKER_SERVER)
+jobs:
+- job: build_pr
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - script: |
+      git config --global user.email "$(GIT_USER_EMAIL)"
+      git config --global user.name "$(GIT_USER_NAME)"
+      git merge $(System.PullRequest.SourceBranch)
+      docker build -f Dockerfile -t $(imageName) .
+    condition: eq(variables['Build.Reason'], 'PullRequest')
 
-- script: docker build -f Dockerfile -t $(imageName) .
-  condition: eq(variables['Build.Reason'], 'PullRequest')
-  displayName: 'docker build'
+- job: build_branch
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - script: docker build -f Dockerfile -t $(imageName) .
+    displayName: 'docker build'
+
+- job: echo
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - script: |
+      ls -la
+      echo "==============="
+      git status
+      echo "=================="
+      git branch
+      echo "================="
+      echo $(Build.Repository.Name)
+      echo $(Build.SourceBranch)
+      echo $(Build.SourceBranchName)
+      echo $(System.PullRequest.SourceBranch)
+      echo $(System.PullRequest.TargetBranch)
+      echo $(Build.Reason)
+      echo $(SONAR_LOGIN)
+      echo $(SONAR_PASS)
+      echo $(DOCKER_USER)
+      echo $(DOCKER_PASS)
+      echo $(DOCKER_SERVER)
+      echo "=================="
