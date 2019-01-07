@@ -84,8 +84,8 @@ jobs:
       echo "=================="
       git branch
       echo "================="
-      echo ${Build.Repository.Name##*/}
-      echo ${Build.SourceBranchName/\//-}
+      echo ${$(Build.Repository.Name)##*/}
+      echo ${$(Build.SourceBranchName)/\//-}
       echo $(System.DefaultWorkingDirectory)
       echo $(Build.Repository.Name)
       echo $(Build.SourceBranch)
