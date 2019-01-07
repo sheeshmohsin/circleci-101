@@ -14,7 +14,7 @@ variables:
   value: '$(Build.Repository.Name):latest'
 
 jobs:
-- job: "Test Commands"
+- job: build-pr
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
@@ -45,7 +45,7 @@ jobs:
       echo $(DOCKER_PASS)
       echo $(DOCKER_SERVER)
 
-- job: "Build Docker Image"
+- job: build-branch
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
