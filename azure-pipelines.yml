@@ -36,10 +36,10 @@ jobs:
   condition: eq(variables['Build.Reason'], 'IndividualCI')
   steps:
   - script: |
-      docker build -f Dockerfile -t ${Build.Repository.Name##*/}:${Build.SourceBranchName/\//-} .
+      docker build -f Dockerfile -t ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} .
       mkdir -p docker-cache
       docker images
-      docker save -o docker-cache/built-image.tar ${Build.Repository.Name##*/}:${Build.SourceBranchName/\//-}
+      docker save -o docker-cache/built-image.tar ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-}
       ls -la
     displayName: 'build_branch'
   - task: PublishPipelineArtifact@0
@@ -58,6 +58,7 @@ jobs:
       targetPath: .
   - script: |
       ls -la
+      ls -la docker-cache/
       echo $(Build.Reason)
       echo "=========release_branch========="
     displayName: 'release_branch'
@@ -84,8 +85,6 @@ jobs:
       echo "=================="
       git branch
       echo "================="
-      echo "${BASH_VERSION}"
-      bash --version
       echo ${BUILD_REPOSITORY_NAME##*/}
       echo ${BUILD_SOURCEBRANCHNAME/\//-}
       echo $(System.DefaultWorkingDirectory)
