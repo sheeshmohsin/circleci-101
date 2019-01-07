@@ -14,7 +14,7 @@ variables:
   value: '$(Build.Repository.Name):latest'
 
 jobs:
-- job: build-pr
+- job: build_pr
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
@@ -45,7 +45,7 @@ jobs:
       echo $(DOCKER_PASS)
       echo $(DOCKER_SERVER)
 
-- job: build-branch
+- job: build_branch
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
