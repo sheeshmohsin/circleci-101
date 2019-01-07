@@ -26,6 +26,8 @@ steps:
     echo "================="
     git checkout $(System.PullRequest.TargetBranch)
     echo "================="
+    git merge $(System.PullRequest.SourceBranch)
+    echo "=================="
     echo $(Build.Repository.Name)
     echo $(Build.SourceBranch)
     echo $(Build.SourceBranchName)
