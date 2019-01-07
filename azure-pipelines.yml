@@ -29,8 +29,8 @@ jobs:
       echo "================="
       git checkout $(System.PullRequest.TargetBranch)
       echo "================="
-      git config --global user.email "sheeshmohsin@gmail.com"
-      git config --global user.name "Sheesh Mohsin"
+      git config --global user.email "$(GIT_USER_EMAIL)"
+      git config --global user.name "$(GIT_USER_NAME)"
       git merge $(System.PullRequest.SourceBranch)
       echo "=================="
       echo $(Build.Repository.Name)
