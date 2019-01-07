@@ -19,8 +19,13 @@ variables:
 steps:
 - script: |
     ls -la
+    echo "==============="
     git status
+    echo "=================="
     git branch
+    echo "================="
+    git checkout $(System.PullRequest.TargetBranch)
+    echo "================="
     echo $(Build.Repository.Name)
     echo $(Build.SourceBranch)
     echo $(Build.SourceBranchName)
