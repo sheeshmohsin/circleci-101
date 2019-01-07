@@ -8,9 +8,6 @@ trigger:
 - dev
 - bug/*
 
-pool:
-  vmImage: 'Ubuntu-16.04'
-
 variables:
 - group: my-variable-group
 - name: imageName
@@ -18,6 +15,8 @@ variables:
 
 jobs:
 - job: "Test Commands"
+  pool:
+    vmImage: 'Ubuntu-16.04'
   steps:
   - script: |
       ls -la
@@ -47,6 +46,8 @@ jobs:
       echo $(DOCKER_SERVER)
 
 - job: "Build Docker Image"
+  pool:
+    vmImage: 'Ubuntu-16.04'
   steps:
   - script: docker build -f Dockerfile -t $(imageName) .
     condition: eq(variables['Build.Reason'], 'PullRequest')
