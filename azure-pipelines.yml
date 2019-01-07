@@ -19,6 +19,7 @@ variables:
 steps:
 - script: |
     ls -la
+    git status
     echo $(Build.Repository.Name)
     echo $(Build.SourceBranchName)
     echo $(Build.Reason)
