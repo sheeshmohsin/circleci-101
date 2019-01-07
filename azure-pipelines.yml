@@ -24,6 +24,8 @@ jobs:
   - script: |
       git config --global user.email "$(GIT_USER_EMAIL)"
       git config --global user.name "$(GIT_USER_NAME)"
+      git checkout $(System.PullRequest.SourceBranch)
+      git checkout $(System.PullRequest.TargetBranch)
       git merge $(System.PullRequest.SourceBranch)
       docker build -f Dockerfile -t $(imageName) .
     condition: eq(variables['Build.Reason'], 'PullRequest')
@@ -33,7 +35,28 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   steps:
   - script: docker build -f Dockerfile -t $(imageName) .
-    displayName: 'docker build'
+    displayName: 'build_branch'
+    condition: eq(variables['Build.Reason'], 'IndividualCI')
+
+- job: release_branch
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  dependsOn: build_branch
+  steps:
+  - script: |
+      echo $(Build.Reason)
+      echo "=========release_branch========="
+    displayName: 'release_branch'
+
+- job: deploy_branch
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  dependsOn: release_branch
+  steps:
+  - script: |
+      echo $(Build.Reason)
+      echo "=========release_branch========="
+    displayName: 'deploy_branch'
 
 - job: echo
   pool:
