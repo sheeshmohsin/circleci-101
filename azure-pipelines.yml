@@ -87,6 +87,7 @@ jobs:
   - script: |
       ls -la
       ls ../
+      env
       echo $(Build.Reason)
       echo $(secureFile)
       echo $(DOWNLOADSECUREFILE_SECUREFILEPATH)
