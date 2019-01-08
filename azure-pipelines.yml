@@ -103,7 +103,7 @@ jobs:
       echo "================="
       echo $(TEMP)
       echo $(Agent.TempDirectory)
-      ls -la $(Agent.TempDirectory)/
+      ls -la $(Agent.TempDirectory)/.taskkey
       echo ${BUILD_REPOSITORY_NAME##*/}
       echo ${BUILD_SOURCEBRANCHNAME/\//-}
       echo $(System.DefaultWorkingDirectory)
