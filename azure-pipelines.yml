@@ -85,8 +85,9 @@ jobs:
       secureFile: staging.pem
   - script: |
       ls -la
+      ls ../
       echo $(Build.Reason)
-      echo "=========release_branch========="
+      echo "=========deploy_branch========="
     displayName: 'deploy_branch'
 
 - job: echo
