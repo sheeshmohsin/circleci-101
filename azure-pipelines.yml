@@ -65,10 +65,10 @@ jobs:
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
-        docker push $DOCKER_SERVER/${BUILD_REPOSITORY_NAME##*/}:staging
+        docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
       elif [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "master" ]; then
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
-        docker push $DOCKER_SERVER/${BUILD_REPOSITORY_NAME##*/}:production
+        docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
       fi
       docker images
       echo "=========release_branch========="
