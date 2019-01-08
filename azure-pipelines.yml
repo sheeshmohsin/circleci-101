@@ -87,7 +87,9 @@ jobs:
   - script: |
       ls -la $(BUILD_ARTIFACTSTAGINGDIRECTORY)
       env
-      chmod 400 $(SECUREFILE_SECUREFILEPATH)
-      ssh -i $(SECUREFILE_SECUREFILEPATH) -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
-      ssh -i $(SECUREFILE_SECUREFILEPATH) -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
+      echo ${SECUREFILE_SECUREFILEPATH}
+      cat ${SECUREFILE_SECUREFILEPATH}
+      chmod 400 ${SECUREFILE_SECUREFILEPATH}
+      ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
+      ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
     displayName: 'deploy_branch'
