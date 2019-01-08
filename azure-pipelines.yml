@@ -102,6 +102,7 @@ jobs:
       git branch
       echo "================="
       ls -la $(Agent.TempDirectory)/
+      echo $env:DOWNLOADSECUREFILE_SECUREFILEPATH
       echo $(Agent.TempDirectory)
       echo ${BUILD_REPOSITORY_NAME##*/}
       echo ${BUILD_SOURCEBRANCHNAME/\//-}
