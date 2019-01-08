@@ -14,7 +14,7 @@ pr:
 variables:
 - group: my-variable-group
 - name: imageName
-  value: '$(Build.Repository.Name):latest'
+  value: '${BUILD_REPOSITORY_NAME##*/}:latest'
 
 jobs:
 - job: build_pr
