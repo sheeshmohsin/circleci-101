@@ -58,9 +58,6 @@ jobs:
       artifactName: 'docker-cache'
       targetPath: .
   - script: |
-      ls -la
-      echo $(Build.Reason)
-      env
       docker load < built-image.tar
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
@@ -70,8 +67,6 @@ jobs:
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
         docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
       fi
-      docker images
-      echo "=========release_branch========="
     displayName: 'release_branch'
 
 - job: deploy_branch
@@ -85,10 +80,6 @@ jobs:
     inputs:
       secureFile: staging.pem
   - script: |
-      ls -la $(BUILD_ARTIFACTSTAGINGDIRECTORY)
-      env
-      echo ${SECUREFILE_SECUREFILEPATH}
-      cat ${SECUREFILE_SECUREFILEPATH}
       chmod 400 ${SECUREFILE_SECUREFILEPATH}
       ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
       ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
