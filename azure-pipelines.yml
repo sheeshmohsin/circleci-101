@@ -61,7 +61,7 @@ jobs:
       ls -la
       ls -la docker-cache/
       echo $(Build.Reason)
-      docker load < docker-cache/built-image.tar
+      docker load < built-image.tar
       docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_SERVER
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $DOCKER_SERVER/${BUILD_REPOSITORY_NAME##*/}:staging
@@ -101,6 +101,7 @@ jobs:
       echo "=================="
       git branch
       echo "================="
+      echo $(Agent.TempDirectory)
       echo ${BUILD_REPOSITORY_NAME##*/}
       echo ${BUILD_SOURCEBRANCHNAME/\//-}
       echo $(System.DefaultWorkingDirectory)
