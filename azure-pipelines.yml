@@ -101,9 +101,9 @@ jobs:
       echo "=================="
       git branch
       echo "================="
-      ls -la $(Agent.TempDirectory)/
-      env | grep staging
+      echo $(TEMP)
       echo $(Agent.TempDirectory)
+      ls -la $(Agent.TempDirectory)/
       echo ${BUILD_REPOSITORY_NAME##*/}
       echo ${BUILD_SOURCEBRANCHNAME/\//-}
       echo $(System.DefaultWorkingDirectory)
