@@ -59,8 +59,8 @@ jobs:
       targetPath: .
   - script: |
       ls -la
-      ls -la docker-cache/
       echo $(Build.Reason)
+      env
       docker load < built-image.tar
       docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_SERVER
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
@@ -89,33 +89,3 @@ jobs:
       ssh -i $(SECUREFILE_SECUREFILEPATH) -o StrictHostKeyChecking=no $STAGING_USER@$STAGING_HOST /home/$STAGING_USER/$SYNC_SCRIPT
       ssh -i $(SECUREFILE_SECUREFILEPATH) -o StrictHostKeyChecking=no $STAGING_USER@$STAGING_HOST /home/$STAGING_USER/$RELOAD_SCRIPT
     displayName: 'deploy_branch'
-
-- job: echo
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  steps:
-  - script: |
-      ls -la
-      echo "==============="
-      git status
-      echo "=================="
-      git branch
-      echo "================="
-      echo $(TEMP)
-      echo $(Agent.TempDirectory)
-      echo $(secureFilePath)
-      echo ${BUILD_REPOSITORY_NAME##*/}
-      echo ${BUILD_SOURCEBRANCHNAME/\//-}
-      echo $(System.DefaultWorkingDirectory)
-      echo $(Build.Repository.Name)
-      echo $(Build.SourceBranch)
-      echo $(Build.SourceBranchName)
-      echo $(System.PullRequest.SourceBranch)
-      echo $(System.PullRequest.TargetBranch)
-      echo $(Build.Reason)
-      echo $(SONAR_LOGIN)
-      echo $(SONAR_PASS)
-      echo $(DOCKER_USER)
-      echo $(DOCKER_PASS)
-      echo $(DOCKER_SERVER)
-      echo "=================="
