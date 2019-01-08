@@ -55,11 +55,22 @@ jobs:
   steps:
   - task: DownloadPipelineArtifact@0
     inputs:
+      artifactName: 'docker-cache'
       targetPath: .
   - script: |
       ls -la
       ls -la docker-cache/
       echo $(Build.Reason)
+      docker load < docker-cache/built-image.tar
+      docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_SERVER
+      if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
+        docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $DOCKER_SERVER/${BUILD_REPOSITORY_NAME##*/}:staging
+        docker push $DOCKER_SERVER/${BUILD_REPOSITORY_NAME##*/}:staging
+      elif [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "master" ]; then
+        docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $DOCKER_SERVER/${BUILD_REPOSITORY_NAME##*/}:production
+        docker push $DOCKER_SERVER/${BUILD_REPOSITORY_NAME##*/}:production
+      fi
+      docker images
       echo "=========release_branch========="
     displayName: 'release_branch'
 
@@ -69,7 +80,11 @@ jobs:
   dependsOn: release_branch
   condition: and(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
   steps:
+  - task: DownloadSecureFile@1
+    inputs:
+      secureFile: staging.pem
   - script: |
+      ls -la
       echo $(Build.Reason)
       echo "=========release_branch========="
     displayName: 'deploy_branch'
