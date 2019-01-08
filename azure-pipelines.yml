@@ -81,12 +81,15 @@ jobs:
   condition: and(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
   steps:
   - task: DownloadSecureFile@1
+    name: secureFile
     inputs:
       secureFile: staging.pem
   - script: |
       ls -la
       ls ../
       echo $(Build.Reason)
+      echo $(secureFile)
+      echo $(DOWNLOADSECUREFILE_SECUREFILEPATH)
       echo "=========deploy_branch========="
     displayName: 'deploy_branch'
 
@@ -103,7 +106,7 @@ jobs:
       echo "================="
       echo $(TEMP)
       echo $(Agent.TempDirectory)
-      ls -la $(Agent.TempDirectory)/.taskkey
+      echo $(secureFilePath)
       echo ${BUILD_REPOSITORY_NAME##*/}
       echo ${BUILD_SOURCEBRANCHNAME/\//-}
       echo $(System.DefaultWorkingDirectory)
