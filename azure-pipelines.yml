@@ -28,6 +28,7 @@ jobs:
       git checkout $(System.PullRequest.SourceBranch)
       git checkout $(System.PullRequest.TargetBranch)
       git merge $(System.PullRequest.SourceBranch)
+      docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       docker build -f Dockerfile -t $(imageName) .
     displayName: 'merge_and_build'
   - script: |
