@@ -157,7 +157,7 @@ jobs:
   - build_branch
   - release_branch
   - deploy_branch
-  condition: eq(variables['Agent.JobStatus'], 'Failed')
+  condition: or(failed('build_pr'), failed('build_branch'), failed('release_branch'), failed('deploy_branch'))
   steps:
   - task: DownloadSecureFile@1
     name: slackPost
