@@ -28,7 +28,7 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD.BUILDURI}|Starting build stage> for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
     displayName: 'slack_notify'
   - script: |
       git config --global user.email "$(GIT_USER_EMAIL)"
@@ -63,7 +63,7 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD.BUILDURI}|Starting build stage> for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
     displayName: 'slack_notify'
   - script: |
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
