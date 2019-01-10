@@ -93,7 +93,7 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
   dependsOn: build_branch
-  condition: eq(variables['Build.Reason'], 'IndividualCI')
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
   steps:
   - task: DownloadPipelineArtifact@0
     inputs:
@@ -127,7 +127,7 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
   dependsOn: release_branch
-  condition: and(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
   steps:
   - task: DownloadSecureFile@1
     name: stagingPEMFile
@@ -152,7 +152,7 @@ jobs:
     displayName: 'slack_notify'
 
 - job: failure_notify
-  condition: failed()
+  condition: eq(variables['Agent.JobStatus'], 'Failed')
   steps:
   - task: DownloadSecureFile@1
     name: slackPost
