@@ -22,7 +22,12 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   condition: eq(variables['Build.Reason'], 'PullRequest')
   steps:
+  - task: DownloadSecureFile@1
+    name: secureFile
+    inputs:
+      secureFile: slackpost.sh
   - script: |
+      env
       git config --global user.email "$(GIT_USER_EMAIL)"
       git config --global user.name "$(GIT_USER_NAME)"
       git checkout $(System.PullRequest.SourceBranch)
@@ -44,7 +49,12 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   condition: eq(variables['Build.Reason'], 'IndividualCI')
   steps:
+  - task: DownloadSecureFile@1
+    name: secureFile
+    inputs:
+      secureFile: slackpost.sh
   - script: |
+      env
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       docker build -f Dockerfile -t ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} .
       mkdir -p docker-cache
@@ -72,8 +82,12 @@ jobs:
   - task: DownloadPipelineArtifact@0
     inputs:
       artifactName: 'docker-cache'
-      targetPath: .
+  - task: DownloadSecureFile@1
+    name: secureFile
+    inputs:
+      secureFile: slackpost.sh
   - script: |
+      env
       docker load < built-image.tar
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
@@ -95,7 +109,12 @@ jobs:
     name: secureFile
     inputs:
       secureFile: staging.pem
+  - task: DownloadSecureFile@1
+    name: secureFile
+    inputs:
+      secureFile: slackpost.sh
   - script: |
+      env
       chmod 400 ${SECUREFILE_SECUREFILEPATH}
       ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
       ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
