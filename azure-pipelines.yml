@@ -150,3 +150,15 @@ jobs:
       chmod +x ${SLACKPOST_SECUREFILEPATH}
       ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Deploy stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
     displayName: 'slack_notify'
+
+- job: failure_notify
+  condition: failed()
+  steps:
+  - task: DownloadSecureFile@1
+    name: slackPost
+    inputs:
+      secureFile: slackpost.sh
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "Build failed for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
