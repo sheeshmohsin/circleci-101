@@ -45,6 +45,7 @@ jobs:
   condition: eq(variables['Build.Reason'], 'IndividualCI')
   steps:
   - script: |
+      docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       docker build -f Dockerfile -t ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} .
       mkdir -p docker-cache
       docker images
