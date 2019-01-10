@@ -152,6 +152,11 @@ jobs:
     displayName: 'slack_notify'
 
 - job: failure_notify
+  dependsOn:
+  - build_pr
+  - build_branch
+  - release_branch
+  - deploy_branch
   condition: eq(variables['Agent.JobStatus'], 'Failed')
   steps:
   - task: DownloadSecureFile@1
