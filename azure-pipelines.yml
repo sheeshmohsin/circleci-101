@@ -28,7 +28,7 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
     displayName: 'slack_notify'
   - script: |
       git config --global user.email "$(GIT_USER_EMAIL)"
@@ -46,6 +46,11 @@ jobs:
       rm sonar-scanner-cli-3.2.0.1227-linux.zip
       /opt/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$(SONAR_LOGIN) -Dsonar.password=$(SONAR_PASS)
     displayName: 'install_sonar_and_run'
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Build stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
+
 
 - job: build_branch
   pool:
@@ -58,7 +63,7 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
     displayName: 'slack_notify'
   - script: |
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
@@ -78,6 +83,11 @@ jobs:
     inputs:
       artifactName: 'docker-cache'
       targetPath: 'docker-cache'
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Build stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
+
 
 - job: release_branch
   pool:
@@ -94,7 +104,7 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting release stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting release stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
     displayName: 'slack_notify'
   - script: |
       docker load < built-image.tar
@@ -107,6 +117,11 @@ jobs:
         docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
       fi
     displayName: 'release_branch'
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Release stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
+
 
 - job: deploy_branch
   pool:
@@ -124,10 +139,14 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting deploy stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting deploy stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
     displayName: 'slack_notify'
   - script: |
       chmod 400 ${STAGINGPEMFILE_SECUREFILEPATH}
       ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
       ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
     displayName: 'deploy_branch'
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Deploy stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
