@@ -23,7 +23,7 @@ jobs:
   condition: eq(variables['Build.Reason'], 'PullRequest')
   steps:
   - task: DownloadSecureFile@1
-    name: secureFile
+    name: slackPost
     inputs:
       secureFile: slackpost.sh
   - script: |
@@ -50,7 +50,7 @@ jobs:
   condition: eq(variables['Build.Reason'], 'IndividualCI')
   steps:
   - task: DownloadSecureFile@1
-    name: secureFile
+    name: slackPost
     inputs:
       secureFile: slackpost.sh
   - script: |
@@ -83,7 +83,7 @@ jobs:
     inputs:
       artifactName: 'docker-cache'
   - task: DownloadSecureFile@1
-    name: secureFile
+    name: slackPost
     inputs:
       secureFile: slackpost.sh
   - script: |
@@ -106,11 +106,11 @@ jobs:
   condition: and(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
   steps:
   - task: DownloadSecureFile@1
-    name: secureFile
+    name: stagingPEMFile
     inputs:
       secureFile: staging.pem
   - task: DownloadSecureFile@1
-    name: secureFile
+    name: slackPost
     inputs:
       secureFile: slackpost.sh
   - script: |
