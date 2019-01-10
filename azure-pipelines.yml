@@ -27,7 +27,10 @@ jobs:
     inputs:
       secureFile: slackpost.sh
   - script: |
-      env
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
+  - script: |
       git config --global user.email "$(GIT_USER_EMAIL)"
       git config --global user.name "$(GIT_USER_NAME)"
       git checkout $(System.PullRequest.SourceBranch)
@@ -54,7 +57,10 @@ jobs:
     inputs:
       secureFile: slackpost.sh
   - script: |
-      env
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting build stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
+  - script: |
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       docker build -f Dockerfile -t ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} .
       mkdir -p docker-cache
@@ -87,7 +93,10 @@ jobs:
     inputs:
       secureFile: slackpost.sh
   - script: |
-      env
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting release stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
+  - script: |
       docker load < built-image.tar
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
@@ -114,8 +123,11 @@ jobs:
     inputs:
       secureFile: slackpost.sh
   - script: |
-      env
-      chmod 400 ${SECUREFILE_SECUREFILEPATH}
-      ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
-      ssh -i ${SECUREFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) "Starting deploy stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+    displayName: 'slack_notify'
+  - script: |
+      chmod 400 ${STAGINGPEMFILE_SECUREFILEPATH}
+      ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
+      ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
     displayName: 'deploy_branch'
