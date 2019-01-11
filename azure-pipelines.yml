@@ -48,7 +48,7 @@ jobs:
     displayName: 'install_sonar_and_run'
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Build stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTID}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
 
 
@@ -85,7 +85,7 @@ jobs:
       targetPath: 'docker-cache'
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Build stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
 
 
@@ -104,7 +104,7 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting release stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Starting release stage> for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
   - script: |
       docker load < built-image.tar
@@ -119,7 +119,7 @@ jobs:
     displayName: 'release_branch'
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Release stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Release stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
 
 
@@ -139,7 +139,7 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "Starting deploy stage for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Starting deploy stage> for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
   - script: |
       chmod 400 ${STAGINGPEMFILE_SECUREFILEPATH}
@@ -148,7 +148,7 @@ jobs:
     displayName: 'deploy_branch'
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "Deploy stage succeeded for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Deploy stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
 
 - job: failure_notify
@@ -165,5 +165,9 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "Build failed for project ${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}"
+      if [ "${BUILD_REASON}" == "PullRequest"]
+        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTID}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+      elif [ "${BUILD_REASON}" == "IndividualCI"]
+        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+      fi
     displayName: 'slack_notify'
