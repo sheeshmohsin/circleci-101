@@ -31,6 +31,7 @@ jobs:
       ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Starting build stage> for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTID}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
   - script: |
+      env
       git config --global user.email "$(GIT_USER_EMAIL)"
       git config --global user.name "$(GIT_USER_NAME)"
       git checkout $(System.PullRequest.SourceBranch)
@@ -165,9 +166,9 @@ jobs:
       secureFile: slackpost.sh
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
-      if [ "${BUILD_REASON}" == "PullRequest"]; then
+      if [ "${BUILD_REASON}" == "PullRequest" ]; then
         ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTID}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
-      elif [ "${BUILD_REASON}" == "IndividualCI"]; then
+      elif [ "${BUILD_REASON}" == "IndividualCI" ]; then
         ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
       fi
     displayName: 'slack_notify'
