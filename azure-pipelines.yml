@@ -166,8 +166,8 @@ jobs:
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
       if [ "${BUILD_REASON}" == "PullRequest" ]; then
-        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:danger "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
       elif [ "${BUILD_REASON}" == "IndividualCI" ]; then
-        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:danger "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
       fi
     displayName: 'slack_notify'
