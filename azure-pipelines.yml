@@ -19,7 +19,7 @@ variables:
 jobs:
 - job: build_pr
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-18.04'
   condition: eq(variables['Build.Reason'], 'PullRequest')
   steps:
   - task: DownloadSecureFile@1
@@ -54,7 +54,7 @@ jobs:
 
 - job: build_branch
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-18.04'
   condition: eq(variables['Build.Reason'], 'IndividualCI')
   steps:
   - task: DownloadSecureFile@1
@@ -91,7 +91,7 @@ jobs:
 
 - job: release_branch
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-18.04'
   dependsOn: build_branch
   condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
   steps:
@@ -125,7 +125,7 @@ jobs:
 
 - job: deploy_branch
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-18.04'
   dependsOn: release_branch
   condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
   steps:
