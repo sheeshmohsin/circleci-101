@@ -175,8 +175,8 @@ jobs:
       aws-iam-authenticator help
       ### Configure AWS
       env
-      mkdir -p ${CREDENTIALS_SECUREFILEPATH} $HOME/.aws/.
-      mkdir -p ${CONFIG_SECUREFILEPATH} $HOME/.aws/.
+      mkdir -p ${AWSCREDENTIALS_SECUREFILEPATH} $HOME/.aws/.
+      mkdir -p ${AWSCONFIG_SECUREFILEPATH} $HOME/.aws/.
       ### Update Kubeconfig
       aws eks --region $(REGION) update-kubeconfig --name $(STAGING_CLUSTER_NAME)
       ### Update Pods
