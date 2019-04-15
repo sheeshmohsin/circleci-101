@@ -174,8 +174,9 @@ jobs:
       echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
       aws-iam-authenticator help
       ### Configure AWS
-      mkdir -p ${CREDENTIALS_SECUREFILEPATH} $HOME/.aws/.
-      mkdir -p ${CONFIG_SECUREFILEPATH} $HOME/.aws/.
+      env
+      mkdir -p ${AWSCREDENTIALS_SECUREFILEPATH} $HOME/.aws/.
+      mkdir -p ${AWSCONFIG_SECUREFILEPATH} $HOME/.aws/.
       ### Update Kubeconfig
       aws eks --region $(REGION) update-kubeconfig --name $(STAGING_CLUSTER_NAME)
       ### Update Pods
