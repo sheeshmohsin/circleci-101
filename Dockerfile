@@ -1,4 +1,4 @@
-FROM sheeshmohsin/liquibase:latest
+FROM vvents.azurecr.io/liquibase:latest
 
 ENV POSTGRES_DB=postgres \
     POSTGRES_USER=vvents \
