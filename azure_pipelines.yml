@@ -44,3 +44,124 @@ jobs:
       ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
 
+
+- job: build_branch
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  condition: eq(variables['Build.Reason'], 'IndividualCI')
+  steps:
+  - task: DownloadSecureFile@1
+    name: slackPost
+    inputs:
+      secureFile: slackpost.sh
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Starting build stage> for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+    displayName: 'slack_notify'
+  - script: |
+      docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
+      docker build -f Dockerfile -t ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} .
+      mkdir -p docker-cache
+      docker images
+      docker save -o docker-cache/built-image.tar ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-}
+    displayName: 'build_branch'
+  - script: |
+      wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
+      sudo unzip -d /opt/ sonar-scanner-cli-3.2.0.1227-linux.zip
+      sudo echo "sonar.host.url=$(SONAR_HOST_URL)" | sudo tee -a /opt/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
+      rm sonar-scanner-cli-3.2.0.1227-linux.zip
+      /opt/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$(SONAR_LOGIN) -Dsonar.password=$(SONAR_PASS)
+    displayName: 'install_sonar_and_run'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'docker-cache'
+      targetPath: 'docker-cache'
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+    displayName: 'slack_notify'
+
+
+- job: release_branch
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  dependsOn: build_branch
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+  steps:
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      artifactName: 'docker-cache'
+  - task: DownloadSecureFile@1
+    name: slackPost
+    inputs:
+      secureFile: slackpost.sh
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Starting release stage> for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+    displayName: 'slack_notify'
+  - script: |
+      docker load < built-image.tar
+      docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
+      if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
+        docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
+        docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
+      elif [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "master" ]; then
+        docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
+        docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
+      fi
+    displayName: 'release_branch'
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Release stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+    displayName: 'slack_notify'
+
+
+- job: deploy_branch
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  dependsOn: release_branch
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
+  steps:
+  - task: DownloadSecureFile@1
+    name: stagingPEMFile
+    inputs:
+      secureFile: staging.pem
+  - task: DownloadSecureFile@1
+    name: slackPost
+    inputs:
+      secureFile: slackpost.sh
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Starting deploy stage> for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+    displayName: 'slack_notify'
+  - script: |
+      chmod 400 ${STAGINGPEMFILE_SECUREFILEPATH}
+      ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
+      ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
+    displayName: 'deploy_branch'
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Deploy stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+    displayName: 'slack_notify'
+
+- job: failure_notify
+  dependsOn:
+  - build_pr
+  - build_branch
+  - release_branch
+  - deploy_branch
+  condition: or(failed('build_pr'), failed('build_branch'), failed('release_branch'), failed('deploy_branch'))
+  steps:
+  - task: DownloadSecureFile@1
+    name: slackPost
+    inputs:
+      secureFile: slackpost.sh
+  - script: |
+      chmod +x ${SLACKPOST_SECUREFILEPATH}
+      if [ "${BUILD_REASON}" == "PullRequest" ]; then
+        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+      elif [ "${BUILD_REASON}" == "IndividualCI" ]; then
+        ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
+      fi
+    displayName: 'slack_notify'
+
