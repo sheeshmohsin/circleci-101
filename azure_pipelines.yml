@@ -27,7 +27,7 @@ jobs:
       echo "##vso[task.setvariable variable=timetag;isOutput=true]$timetag"
     displayName: 'set_variable'
   - script: |
-      echo "timetag variable is $timetag"
+      echo "timetag variable is $(set_variable.timetag)"
     displayName: 'get_job_scoped_variable'
 
 - job: get_multi_job_var
