@@ -26,8 +26,8 @@ jobs:
       productiontimetag=production-`date +"%Y%m%d-%H-%M"`
       echo "timetag logged - $timetag"
       echo "production timetag logged - $productiontimetag"
-      echo "##vso[task.setvariable variable=timeTag;isOutput=true]$timetag"
-      echo "##vso[task.setvariable variable=productionTimeTag;isOutput=true]$productiontimetag"
+      echo "##vso[task.setvariable variable=timetag;isOutput=true]$timetag"
+      echo "##vso[task.setvariable variable=productiontimetag;isOutput=true]$productiontimetag"
     displayName: 'setVariable'
   - script: |
       env
@@ -40,7 +40,7 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   dependsOn: setvar
   variables:
-    timeTagFromsetvar: $[ dependencies.setvar.outputs['setVariable.timeTag'] ]
+    timeTagFromsetvar: $[ dependencies.setvar.outputs['setVariable.timetag'] ]
   steps:
   - script: |
       env
