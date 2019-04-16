@@ -104,14 +104,14 @@ jobs:
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
         timeTag=staging-`date +"%Y%m%d-%H-%M"`
-        echo '##vso[task.setvariable variable=timeTag;isOutput=true]$timeTag'
+        echo '##vso[task.setvariable variable=timeTag;isOutput=true]$(timeTag)'
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
         docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
         docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
       elif [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "master" ]; then
         timeTag=production-`date +"%Y%m%d-%H-%M"`
-        echo '##vso[task.setvariable variable=timeTag;isOutput=true]$timeTag'
+        echo '##vso[task.setvariable variable=timeTag;isOutput=true]$(timeTag)'
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
         docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
