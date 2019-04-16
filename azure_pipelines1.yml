@@ -40,13 +40,6 @@ jobs:
       docker build -f Dockerfile -t $(imageName) .
     displayName: 'merge_and_build'
   - script: |
-      wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
-      sudo unzip -d /opt/ sonar-scanner-cli-3.2.0.1227-linux.zip
-      sudo echo "sonar.host.url=$(SONAR_HOST_URL)" | sudo tee -a /opt/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
-      rm sonar-scanner-cli-3.2.0.1227-linux.zip
-      /opt/sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$(SONAR_LOGIN) -Dsonar.password=$(SONAR_PASS)
-    displayName: 'install_sonar_and_run'
-  - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
       ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/pull/${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
@@ -110,13 +103,27 @@ jobs:
       docker load < built-image.tar
       docker login -u $(DOCKER_USER) -p $(DOCKER_PASS) $(DOCKER_SERVER)
       if [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "dev" ]; then
+        timeTag=staging-`date +"%Y%m%d-%H-%M"`
+        echo "$timeTag"
+        echo "##vso[task.setvariable variable=timeTag;isOutput=true]$(timeTag)"
+        docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
+        docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
         docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:staging
       elif [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "master" ]; then
+        timeTag=production-`date +"%Y%m%d-%H-%M"`
+        echo '##vso[task.setvariable variable=timeTag;isOutput=true]$(timeTag)'
+        docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
+        docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${timeTag}
         docker tag ${BUILD_REPOSITORY_NAME##*/}:${BUILD_SOURCEBRANCHNAME/\//-} $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
         docker push $(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:production
       fi
-    displayName: 'release_branch'
+      env
+    displayName: 'release'
+  - script: |
+      echo "$(timeTag)"
+      echo "time tag logged"
+    displayName: 'logger'
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
       ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#10c95a "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Release stage> succeeded for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
@@ -128,23 +135,59 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   dependsOn: release_branch
   condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranchName'], 'dev'))
+  variables:
+    timeTag: $[dependencies.release_branch.outputs['release.timeTag']]
   steps:
-  - task: DownloadSecureFile@1
-    name: stagingPEMFile
-    inputs:
-      secureFile: staging.pem
   - task: DownloadSecureFile@1
     name: slackPost
     inputs:
       secureFile: slackpost.sh
+  - task: DownloadSecureFile@1
+    name: awsCredentials
+    inputs:
+      secureFile: credentials
+  - task: DownloadSecureFile@1
+    name: awsConfig
+    inputs:
+      secureFile: config
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
       ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f4e21d "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Starting deploy stage> for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
     displayName: 'slack_notify'
   - script: |
-      chmod 400 ${STAGINGPEMFILE_SECUREFILEPATH}
-      ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(SYNC_SCRIPT)
-      ssh -i ${STAGINGPEMFILE_SECUREFILEPATH} -o StrictHostKeyChecking=no $(STAGING_USER)@$(STAGING_HOST) /home/$(STAGING_USER)/$(RELOAD_SCRIPT)
+      env
+      ### Install Unzip
+      sudo apt install unzip -y
+      ### Install AWS CLI
+      echo ">> Installing AWS CLI"
+      curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+      sudo ln -s /usr/bin/python3 /usr/bin/python
+      sudo apt-get install python-virtualenv -y
+      unzip awscli-bundle.zip
+      mkdir -p ~/bin && ./awscli-bundle/install -b ~/bin/aws
+      export PATH=~/bin:$PATH
+      aws --version
+      ### Install Kubectl
+      curl -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/kubectl
+      chmod +x ./kubectl
+      mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+      echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+      kubectl version --short --client
+      ### Install AWS IAM Authenticator
+      DOWNLOAD_URL="https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator"
+      curl -o aws-iam-authenticator $DOWNLOAD_URL
+      chmod +x ./aws-iam-authenticator
+      mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$HOME/bin:$PATH
+      echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+      aws-iam-authenticator help
+      ### Configure AWS
+      mkdir -p $HOME/.aws/
+      cp ${AWSCREDENTIALS_SECUREFILEPATH} $HOME/.aws/.
+      cp ${AWSCONFIG_SECUREFILEPATH} $HOME/.aws/.
+      ### Update Kubeconfig
+      aws eks --region $(REGION) update-kubeconfig --name $(STAGING_CLUSTER_NAME)
+      ### Update Pods
+      kubectl set image deployment/${BUILD_REPOSITORY_NAME##*/}-deployment ${BUILD_REPOSITORY_NAME##*/}=${BUILD_REPOSITORY_NAME##*/}:${timeTag} --record=true
     displayName: 'deploy_branch'
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
@@ -171,3 +214,4 @@ jobs:
         ${SLACKPOST_SECUREFILEPATH} $(SLACK_HOOK) color:#f73c1b "<https://dev.azure.com/vvents/web/build.aspx?pcguid=${SYSTEM_COLLECTIONID}&builduri=${BUILD_BUILDURI}|Build> failed for project <https://github.com/${BUILD_REPOSITORY_NAME}/commit/${BUILD_SOURCEVERSION}|${BUILD_REPOSITORY_NAME##*/}#${BUILD_SOURCEBRANCHNAME/\//-}>"
       fi
     displayName: 'slack_notify'
+
