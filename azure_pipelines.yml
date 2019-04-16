@@ -23,11 +23,11 @@ jobs:
   steps:
   - script: |
       timeTag=staging-`date +"%Y%m%d-%H-%M"`
-      echo "timetag logged - $(timeTag)"
-      echo "##vso[task.setvariable variable=timeTag;isOutput=true]$(timeTag)"
+      echo "timetag logged - $timeTag"
+      echo "##vso[task.setvariable variable=timeTag;isOutput=true]$timeTag"
     displayName: 'set_variable'
   - script: |
-      echo "timetag variable is $(timeTag)"
+      echo "timetag variable is $timeTag"
     displayName: 'get_job_scoped_variable'
 
 - job: get_multi_job_var
