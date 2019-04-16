@@ -22,12 +22,12 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   steps:
   - script: |
-      timeTag=staging-`date +"%Y%m%d-%H-%M"`
+      timetag=staging-`date +"%Y%m%d-%H-%M"`
       echo "timetag logged - $timeTag"
-      echo "##vso[task.setvariable variable=timeTag;isOutput=true]$timeTag"
+      echo "##vso[task.setvariable variable=timetag;isOutput=true]$timetag"
     displayName: 'set_variable'
   - script: |
-      echo "timetag variable is $timeTag"
+      echo "timetag variable is $timetag"
     displayName: 'get_job_scoped_variable'
 
 - job: get_multi_job_var
@@ -35,7 +35,7 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   dependsOn: setvar
   variables:
-    timeTag: $[ dependencies.setvar.outputs['set_variable.timeTag'] ]
+    timeTag: $[ dependencies.setvar.outputs['set_variable.timetag'] ]
   steps:
   - script: |
       echo "timetag variable is $(timeTag)"
