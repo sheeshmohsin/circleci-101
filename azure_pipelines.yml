@@ -40,11 +40,10 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   dependsOn: setvar
   variables:
-    timeTag: $[ dependencies.setvar.outputs['setVariable.timeTag'] ]
+    timeTagFromsetvar: $[ dependencies.setvar.outputs['setVariable.timeTag'] ]
   steps:
   - script: |
       env
       echo "timetag variable is ${TIMETAG}"
-      echo "timetag variable is $(timeTag)"
-      echo "timetag variable is $(setvar.setVariable.timeTag)"
+      echo "timetag variable is $(timeTagFromsetvar)"
     displayName: 'get_multi_job_variable'
