@@ -28,7 +28,7 @@ jobs:
     displayName: 'setVariable'
   - script: |
       env
-      echo "timetag variable is $(setVariable.timeTag)"
+      echo "timetag variable is ${CMDLINE1_TIMETAG}"
     displayName: 'get_job_scoped_variable'
 
 - job: get_multi_job_var
