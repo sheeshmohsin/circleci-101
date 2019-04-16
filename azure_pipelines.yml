@@ -33,6 +33,7 @@ jobs:
 - job: get_multi_job_var
   pool:
     vmImage: 'Ubuntu-16.04'
+  dependsOn: setvar
   variables:
     timeTag: $[ dependencies.setvar.outputs['set_variable.timeTag'] ]
   steps:
