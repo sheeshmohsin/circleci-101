@@ -21,7 +21,7 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
-  - script: |
+  - powershell: |
       timetag=staging-`date +"%Y%m%d-%H-%M"`
       echo "timetag logged - $timetag"
       echo "##vso[task.setvariable variable=timetag;isOutput=true]$timetag"
