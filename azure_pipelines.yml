@@ -40,5 +40,6 @@ jobs:
   steps:
   - script: |
       env
+      echo "$[ dependencies.setvar.outputs ]"
       echo "timetag variable is $(timeTag)"
     displayName: 'get_multi_job_variable'
