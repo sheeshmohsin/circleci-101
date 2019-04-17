@@ -1,0 +1,49 @@
+# Docker image
+# Build a Docker image to deploy, run, or push to a container registry.
+# Add steps that use Docker Compose, tag images, push to a registry, run an image, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+- dev
+
+pr:
+- master
+- dev
+
+variables:
+- group: my-variable-group
+- name: imageName
+  value: '${BUILD_REPOSITORY_NAME##*/}:latest'
+
+jobs:
+- job: setvar
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - script: |
+      timetag=staging-`date +"%Y%m%d-%H-%M"`
+      productiontimetag=production-`date +"%Y%m%d-%H-%M"`
+      echo "timetag logged - $timetag"
+      echo "production timetag logged - $productiontimetag"
+      echo "##vso[task.setvariable variable=timetag;isOutput=true]$timetag"
+      echo "##vso[task.setvariable variable=productiontimetag;isOutput=true]$productiontimetag"
+    displayName: 'setVariable'
+  - script: |
+      env
+      echo "timetag variable is ${CMDLINE1_TIMETAG}"
+      echo "production timetag variable is ${CMDLINE1_PRODUCTIONTIMETAG}"
+    displayName: 'get_job_scoped_variable'
+
+- job: get_multi_job_var
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  dependsOn: setvar
+  variables:
+    timeTagFromsetvar: $[ dependencies.setvar.outputs['setVariable.timetag'] ]
+  steps:
+  - script: |
+      env
+      echo "timetag variable is ${TIMETAG}"
+      echo "timetag variable is $(timeTagFromsetvar)"
+    displayName: 'get_multi_job_variable'
