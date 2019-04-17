@@ -40,7 +40,7 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   dependsOn: setvar
   variables:
-    timeTagFromsetvar: $[ dependencies.setvar.outputs ]
+    timeTagFromsetvar: $[ dependencies.setvar.outputs['setvar.setVariable.timetag'] ]
   steps:
   - script: |
       env
