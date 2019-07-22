@@ -189,7 +189,7 @@ jobs:
       elif [ "${BUILD_SOURCEBRANCHNAME/\//-}" == "master" ]; then
         tag=production-${BUILD_SOURCEVERSION:0:8}
       fi
-      kubectl set image deployment/${BUILD_REPOSITORY_NAME##*/}-deployment ${BUILD_REPOSITORY_NAME##*/}=${BUILD_REPOSITORY_NAME##*/}:${tag} --record=true
+      kubectl set image deployment/${BUILD_REPOSITORY_NAME##*/}-deployment ${BUILD_REPOSITORY_NAME##*/}=$(DOCKER_SERVER)/${BUILD_REPOSITORY_NAME##*/}:${tag} --record=true
     displayName: 'deploy_branch'
   - script: |
       chmod +x ${SLACKPOST_SECUREFILEPATH}
