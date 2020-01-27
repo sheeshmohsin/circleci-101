@@ -1,0 +1,66 @@
+# secrets used:
+# SLACK_BOT_TOKEN
+# SLACK_NOTIFY_CHANNEL
+
+on: { pull_request: { branches: [master, dev] } }
+name: Mergeability
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify job start on slack
+        id: slack
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel: ${{ secrets.SLACK_NOTIFY_CHANNEL }}
+          status: STARTED
+          color: warning
+
+      - name: Set up variables
+        run: |
+          prefix="refs/heads/"
+          head_ref=${{ github.head_ref }}
+          base_ref=${{ github.base_ref }}
+          echo "::set-env name=SOURCE_BRANCH::${head_ref#"$prefix"}"
+          echo "::set-env name=TARGET_BRANCH::${base_ref#"$prefix"}"
+
+      - name: Checkout repository
+        uses: actions/checkout@master
+
+      - name: Merge requested branch
+        run: |
+          git fetch origin $SOURCE_BRANCH
+          git checkout $SOURCE_BRANCH
+          git fetch origin $TARGET_BRANCH
+          git checkout $TARGET_BRANCH
+          git merge $SOURCE_BRANCH
+
+      - name: Build docker image
+        run: |
+          docker build . -t doesnotmatter
+
+      - name: Notify job success on slack
+        if: success()
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          # updates existing message from the first step
+          message_id: ${{ steps.slack.outputs.message_id }}
+          channel: ${{ secrets.SLACK_NOTIFY_CHANNEL }}
+          status: COMPLETED
+          color: good
+
+      - name: Notify job failure on slack
+        if: failure()
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          # updates existing message from the first step
+          message_id: ${{ steps.slack.outputs.message_id }}
+          channel: ${{ secrets.SLACK_NOTIFY_CHANNEL }}
+          status: FAILED
+          color: danger
