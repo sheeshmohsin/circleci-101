@@ -1,0 +1,90 @@
+# secrets used:
+# REGISTRY_NAME
+# REGISTRY_USERNAME
+# REGISTRY_PASSWORD
+# KUBE_CONFIG
+# KUBE_IMAGE_PULL_SECRET
+# SLACK_BOT_TOKEN
+# SLACK_NOTIFY_CHANNEL
+
+on: { push: { branches: [master, dev] } }
+name: Deployment
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify job start on slack
+        id: slack
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel: ${{ secrets.SLACK_NOTIFY_CHANNEL }}
+          status: STARTED
+          color: warning
+
+      - name: Set up variables
+        run: |
+          registry_name=${{ secrets.REGISTRY_NAME }}
+          repository_name=$(basename ${{ github.repository }})
+          branch_prefix="refs/heads/"
+          branch_ref=${{ github.ref }}
+          branch_name=${branch_ref#"$branch_prefix"}
+          image_name=$registry_name/$repository_name:$branch_name
+          echo "::set-env name=IMAGE_NAME::$image_name"
+          echo "::set-env name=IMAGE_ARGS::--label \"commit=${{ github.sha }}\""
+
+      - name: Checkout repository
+        uses: actions/checkout@master
+
+      - name: Login to docker
+        uses: Azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_NAME }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build & push docker image
+        run: |
+          docker build . $IMAGE_ARGS -t $IMAGE_NAME
+          docker push $IMAGE_NAME
+
+      - name: Set kube context
+        uses: Azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Deploy to kubernetes
+        uses: Azure/k8s-deploy@v1
+        with:
+          manifests: |
+            manifests/deployment.yml
+            manifests/service.yml
+          images: |
+            $IMAGE_NAME
+          imagepullsecrets: |
+            ${{ secrets.KUBE_IMAGE_PULL_SECRET }}
+
+      - name: Notify job success on slack
+        if: success()
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          # updates existing message from the first step
+          message_id: ${{ steps.slack.outputs.message_id }}
+          channel: ${{ secrets.SLACK_NOTIFY_CHANNEL }}
+          status: COMPLETED
+          color: good
+
+      - name: Notify job failure on slack
+        if: failure()
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          # updates existing message from the first step
+          message_id: ${{ steps.slack.outputs.message_id }}
+          channel: ${{ secrets.SLACK_NOTIFY_CHANNEL }}
+          status: FAILED
+          color: danger
